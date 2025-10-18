@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Prediction Logs - Admin{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="fw-bold">
+                    <i class="fas fa-list text-primary me-2"></i>
+                    All Prediction Logs
+                </h2>
+                <p class="text-muted">Complete history of all price predictions</p>
+            </div>
+        </div>
+
+        <!-- Logs Table -->
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="logsTable">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Commodity</th>
+                                <th>Location</th>
+                                <th>Predicted Price</th>
+                                <th>Rainfall (mm)</th>
+                                <th>Month/Year</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if logs %}
+                                {% for log in logs %}
+                                <tr>
+                                    <td class="text-muted">#{{ log[0] }}</td>
+                                    <td>
+                                        <i class="fas fa-user me-1 text-muted"></i>
+                                        {{ log[1] }}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">{{ log[2] }}</span>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-map-marker-alt me-1 text-muted"></i>
+                                        {{ log[3] }}
+                                    </td>
+                                    <td class="fw-bold text-success">
+                                        ₹{{ "%.2f"|format(log[4]) }}
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-cloud-rain me-1 text-info"></i>
+                                        {{ "%.1f"|format(log[5]) if log[5] else 'N/A' }}
+                                    </td>
+                                    <td>{{ log[6] }}/{{ log[7] }}</td>
+                                    <td>
+                                        <small class="text-muted">{{ log[8] }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-5">
+                                        <i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i>
+                                        <p class="text-muted">No prediction logs available</p>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+                <p class="mb-0 text-muted">
+                    <strong>Total Records:</strong> {{ logs|length if logs else 0 }}
+                </p>
+                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+#logsTable {
+    font-size: 0.9rem;
+}
+
+#logsTable tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+#logsTable tbody tr:hover {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}
+

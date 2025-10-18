@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Dataset - Admin{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Header -->
+                <div class="mb-4">
+                    <h2 class="fw-bold">
+                        <i class="fas fa-upload text-primary me-2"></i>
+                        Upload New Dataset
+                    </h2>
+                    <p class="text-muted">Upload CSV dataset to retrain prediction models</p>
+                </div>
+
+                <!-- Upload Form Card -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-body p-4">
+                        <form method="POST" enctype="multipart/form-data" action="{{ url_for('upload_dataset') }}">
+                            <!-- Commodity Selection -->
+                            <div class="mb-4">
+                                <label for="commodity" class="form-label fw-semibold">
+                                    <i class="fas fa-seedling me-1"></i> Select Commodity
+                                </label>
+                                <select class="form-select form-select-lg" id="commodity" name="commodity" required>
+                                    <option value="">Choose commodity...</option>
+                                    {% for crop in commodities %}
+                                    <option value="{{ crop }}">{{ crop }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- File Upload -->
+                            <div class="mb-4">
+                                <label for="dataset" class="form-label fw-semibold">
+                                    <i class="fas fa-file-csv me-1"></i> Upload CSV File
+                                </label>
+                                <input type="file" class="form-control form-control-lg" id="dataset" 
+                                       name="dataset" accept=".csv" required>
+                                <small class="text-muted">
+                                    Maximum file size: 100MB. File must be in CSV format.
+                                </small>
+                            </div>
+
+                            <!-- Dataset Requirements -->
+                            <div class="alert alert-info">
+                                <h6 class="fw-bold mb-2">
+                                    <i class="fas fa-info-circle me-2"></i> Dataset Requirements
+                                </h6>
+                                <ul class="mb-0">
+                                    <li>CSV file must contain columns: <code>Month</code>, <code>Year</code>, 
+                                        <code>Rainfall</code>, <code>WPI</code></li>
+                                    <li>Month should be numeric (1-12)</li>
+                                    <li>Year should be in YYYY format</li>
+                                    <li>Rainfall in millimeters (mm)</li>
+                                    <li>WPI is the Wholesale Price Index</li>
+                                </ul>
+                            </div>
+
+                            <!-- Example Data -->
+                            <div class="card bg-light border-0 mb-4">
+                                <div class="card-body">
+                                    <h6 class="fw-bold mb-3">Example CSV Format:</h6>
+                                    <pre class="mb-0"><code>Month,Year,Rainfall,WPI
+4,2012,47.5,104.6
+5,2012,31.7,105.4
+6,2012,117.8,104.4</code></pre>
+                                </div>
+                            </div>
+
+                            <!-- Buttons -->
+                            <div class="d-flex gap-3">
+                                <button type="submit" class="btn btn-primary btn-lg px-4">
+                                    <i class="fas fa-upload me-2"></i> Upload Dataset
+                                </button>
+                                <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary btn-lg px-4">
+                                    <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Retrain Model Section -->
+                <div class="card shadow-sm border-0 mt-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-sync-alt me-2"></i> Retrain Model
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">
+                            After uploading a dataset, you can retrain the machine learning model 
+                            to incorporate the new data for better predictions.
+                        </p>
+                        <form method="POST" action="{{ url_for('retrain_model') }}" 
+                              onsubmit="return confirm('Are you sure you want to retrain the model? This may take a few minutes.');">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-6">
+                                    <label for="retrain_commodity" class="form-label fw-semibold">
+                                        Select Commodity to Retrain
+                                    </label>
+                                    <select class="form-select" id="retrain_commodity" 
+                                            name="commodity" required>
+                                        <option value="">Choose commodity...</option>
+                                        {% for crop in commodities %}
+                                        <option value="{{ crop }}">{{ crop }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="dataset_path" class="form-label fw-semibold">
+                                        Dataset Path
+                                    </label>
+                                    <input type="text" class="form-control" id="dataset_path" 
+                                           name="dataset_path" placeholder="data/uploads/filename.csv" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-warning mt-3">
+                                <i class="fas fa-cogs me-2"></i> Start Retraining
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

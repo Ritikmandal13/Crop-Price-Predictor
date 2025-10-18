@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Price Forecast - {{ commodity }} - Crop Price Predictor{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold">
+                    <i class="fas fa-crystal-ball text-success me-2"></i>
+                    Price Forecast - {{ commodity }}
+                </h2>
+                <p class="text-muted">Future price predictions for the next 6 months</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{{ url_for('price_history', commodity=commodity) }}" class="btn btn-info mb-2">
+                    <i class="fas fa-chart-area me-2"></i> View History
+                </a>
+                <a href="{{ url_for('farmer_dashboard') }}" class="btn btn-outline-secondary mb-2">
+                    <i class="fas fa-arrow-left me-2"></i> Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Forecast Chart -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-line me-2"></i> 6-Month Price Forecast
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if forecast_chart %}
+                        <div id="forecastChart"></div>
+                        <div class="alert alert-warning mt-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Disclaimer:</strong> These are predictive estimates based on historical trends. 
+                            Actual market prices may vary due to various factors including weather, demand, 
+                            government policies, and global market conditions.
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-exclamation-circle fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Unable to generate forecast for {{ commodity }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Predictions Table -->
+        {% if predictions %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-table me-2"></i> Month-wise Predictions
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><i class="fas fa-calendar me-2"></i> Month</th>
+                                        <th><i class="fas fa-chart-line me-2"></i> Predicted WPI</th>
+                                        <th><i class="fas fa-check-circle me-2"></i> Confidence Level</th>
+                                        <th><i class="fas fa-lightbulb me-2"></i> Recommendation</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for pred in predictions %}
+                                    <tr>
+                                        <td class="fw-semibold">{{ pred.month }}</td>
+                                        <td class="text-success fw-bold">{{ pred.predicted_wpi }}</td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if pred.confidence == 'High' %}bg-success
+                                                {% elif pred.confidence == 'Medium' %}bg-warning
+                                                {% else %}bg-secondary{% endif %}">
+                                                {{ pred.confidence }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if loop.index <= 2 %}
+                                                <span class="text-success">
+                                                    <i class="fas fa-thumbs-up me-1"></i> Good time to sell
+                                                </span>
+                                            {% elif loop.index <= 4 %}
+                                                <span class="text-warning">
+                                                    <i class="fas fa-clock me-1"></i> Monitor market
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">
+                                                    <i class="fas fa-info-circle me-1"></i> Long-term planning
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Price Analysis -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-arrow-up fa-3x text-success mb-3"></i>
+                        <h5 class="fw-bold">Best Month</h5>
+                        <p class="lead text-success fw-bold mb-1">{{ predictions[0].month }}</p>
+                        <p class="text-muted mb-0">Highest predicted price</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                        <h5 class="fw-bold">Average WPI</h5>
+                        <p class="lead text-primary fw-bold mb-1">
+                            {{ "%.2f"|format(predictions | map(attribute='predicted_wpi') | sum / predictions | length) }}
+                        </p>
+                        <p class="text-muted mb-0">6-month average</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-info-circle fa-3x text-warning mb-3"></i>
+                        <h5 class="fw-bold">Market Outlook</h5>
+                        <p class="lead text-warning fw-bold mb-1">Stable</p>
+                        <p class="text-muted mb-0">Based on trends</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Tips for Farmers -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0 bg-light">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-lightbulb me-2 text-warning"></i> Actionable Tips
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="list-unstyled">
+                                    <li class="mb-3">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        <strong>Plan ahead:</strong> Use these forecasts to plan your selling strategy
+                                    </li>
+                                    <li class="mb-3">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        <strong>Storage:</strong> Consider storing produce if prices are expected to rise
+                                    </li>
+                                    <li class="mb-3">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        <strong>Diversify:</strong> Don't rely on a single crop; diversify your portfolio
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="list-unstyled">
+                                    <li class="mb-3">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        <strong>Weather watch:</strong> Monitor weather forecasts as they affect prices
+                                    </li>
+                                    <li class="mb-3">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        <strong>Market news:</strong> Stay updated with agricultural market news
+                                    </li>
+                                    <li class="mb-3">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        <strong>Local demand:</strong> Consider local market demand before selling
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Render Forecast Chart
+    {% if forecast_chart %}
+    var forecastData = {{ forecast_chart | safe }};
+    Plotly.newPlot('forecastChart', forecastData.data, forecastData.layout, {responsive: true});
+    {% endif %}
+</script>
+{% endblock %}
+

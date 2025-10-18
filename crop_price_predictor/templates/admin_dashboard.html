@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Crop Price Predictor{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="fw-bold">
+                    <i class="fas fa-tachometer-alt text-primary me-2"></i>
+                    Admin Dashboard
+                </h1>
+                <p class="text-muted">Manage predictions, datasets, and users</p>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="stats-card card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Total Predictions</h6>
+                                <h2 class="fw-bold mb-0">{{ total_predictions }}</h2>
+                            </div>
+                            <div class="stats-icon bg-success">
+                                <i class="fas fa-chart-line fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="stats-card card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-2">Registered Farmers</h6>
+                                <h2 class="fw-bold mb-0">{{ total_farmers }}</h2>
+                            </div>
+                            <div class="stats-icon bg-primary">
+                                <i class="fas fa-users fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Recent Predictions -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white border-bottom">
+                        <h5 class="mb-0 fw-bold">
+                            <i class="fas fa-clock me-2 text-primary"></i> Recent Predictions
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>User</th>
+                                        <th>Commodity</th>
+                                        <th>Location</th>
+                                        <th>Price</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if recent_predictions %}
+                                        {% for pred in recent_predictions %}
+                                        <tr>
+                                            <td><i class="fas fa-user me-1 text-muted"></i> {{ pred[4] }}</td>
+                                            <td><span class="badge bg-success">{{ pred[0] }}</span></td>
+                                            <td><i class="fas fa-map-marker-alt me-1 text-muted"></i> {{ pred[1] }}</td>
+                                            <td class="fw-bold text-success">₹{{ "%.2f"|format(pred[2]) }}</td>
+                                            <td><small class="text-muted">{{ pred[3] }}</small></td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4 text-muted">
+                                                No predictions yet
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <a href="{{ url_for('view_logs') }}" class="btn btn-outline-primary btn-sm">
+                            View All Logs <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Commodity Statistics & Actions -->
+            <div class="col-lg-4">
+                <!-- Commodity Stats -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white border-bottom">
+                        <h6 class="mb-0 fw-bold">
+                            <i class="fas fa-chart-bar me-2 text-warning"></i> Commodity Statistics
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        {% if commodity_stats %}
+                            {% for stat in commodity_stats %}
+                            <div class="mb-3 pb-3 border-bottom">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <strong>{{ stat[0] }}</strong>
+                                    <span class="badge bg-primary">{{ stat[1] }} predictions</span>
+                                </div>
+                                <small class="text-muted">
+                                    Avg Price: <strong class="text-success">₹{{ "%.2f"|format(stat[2]) }}</strong>
+                                </small>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted text-center mb-0">No data available</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white border-bottom">
+                        <h6 class="mb-0 fw-bold">
+                            <i class="fas fa-bolt me-2 text-danger"></i> Quick Actions
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('upload_dataset') }}" class="btn btn-primary">
+                                <i class="fas fa-upload me-2"></i> Upload Dataset
+                            </a>
+                            <a href="{{ url_for('view_logs') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-list me-2"></i> View All Logs
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.stats-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.stats-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}
+

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Crop Price Predictor{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card shadow-lg border-0">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <i class="fas fa-user-circle fa-4x text-success mb-3"></i>
+                            <h2 class="fw-bold">Welcome Back</h2>
+                            <p class="text-muted">Login to continue</p>
+                        </div>
+
+                        <form method="POST" action="{{ url_for('login') }}">
+                            <!-- Role Selection -->
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Login As:</label>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="role" id="roleFarmer" 
+                                           value="farmer" checked>
+                                    <label class="btn btn-outline-success" for="roleFarmer">
+                                        <i class="fas fa-user me-2"></i> Farmer
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="role" id="roleAdmin" 
+                                           value="admin">
+                                    <label class="btn btn-outline-primary" for="roleAdmin">
+                                        <i class="fas fa-user-shield me-2"></i> Admin
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Username -->
+                            <div class="mb-3">
+                                <label for="username" class="form-label">
+                                    <i class="fas fa-user me-1"></i> Username
+                                </label>
+                                <input type="text" class="form-control form-control-lg" id="username" 
+                                       name="username" required placeholder="Enter your username">
+                            </div>
+
+                            <!-- Password -->
+                            <div class="mb-4">
+                                <label for="password" class="form-label">
+                                    <i class="fas fa-lock me-1"></i> Password
+                                </label>
+                                <input type="password" class="form-control form-control-lg" id="password" 
+                                       name="password" required placeholder="Enter your password">
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn-success btn-lg w-100 mb-3">
+                                <i class="fas fa-sign-in-alt me-2"></i> Login
+                            </button>
+
+                            <!-- Register Link -->
+                            <div class="text-center">
+                                <p class="text-muted mb-0">
+                                    Don't have an account? 
+                                    <a href="{{ url_for('register') }}" class="text-decoration-none fw-semibold">
+                                        Register here
+                                    </a>
+                                </p>
+                            </div>
+                        </form>
+
+                        <!-- Demo Credentials -->
+                        <div class="alert alert-info mt-4">
+                            <small class="fw-bold d-block mb-2">Demo Credentials:</small>
+                            <small class="d-block">👤 Farmer: <code>farmer</code> / <code>farmer123</code></small>
+                            <small class="d-block">🔐 Admin: <code>admin</code> / <code>admin123</code></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

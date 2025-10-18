@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Prediction Result - Crop Price Predictor{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Success Card -->
+                <div class="card shadow-lg border-0 result-card">
+                    <div class="card-body text-center p-5">
+                        <!-- Success Icon -->
+                        <div class="mb-4">
+                            <i class="fas fa-check-circle fa-5x text-success"></i>
+                        </div>
+
+                        <!-- Title -->
+                        <h2 class="fw-bold mb-3">Prediction Successful!</h2>
+                        <p class="text-muted mb-4">Here's the predicted price for your crop</p>
+
+                        <!-- Result Box -->
+                        <div class="result-box p-4 mb-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-6 text-md-start text-center mb-3 mb-md-0">
+                                    <h5 class="text-muted mb-2">Predicted Price for</h5>
+                                    <h3 class="fw-bold text-success mb-1">{{ commodity }}</h3>
+                                    <p class="text-muted mb-0">
+                                        <i class="fas fa-map-marker-alt me-1"></i> Maharashtra
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="price-display">
+                                        <h1 class="display-3 fw-bold text-success mb-0">₹{{ "%.2f"|format(price) }}</h1>
+                                        <p class="text-muted">per quintal</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Info -->
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            This price is calculated based on historical data, rainfall patterns, 
+                            and market trends. Actual market prices may vary.
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-3 justify-content-center flex-wrap">
+                            <a href="{{ url_for('farmer_dashboard') }}" class="btn btn-success btn-lg px-4">
+                                <i class="fas fa-redo me-2"></i> Make Another Prediction
+                            </a>
+                            <button onclick="window.print()" class="btn btn-outline-secondary btn-lg px-4">
+                                <i class="fas fa-print me-2"></i> Print Result
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.result-card {
+    animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.result-box {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 15px;
+    border: 2px solid #e9ecef;
+}
+
+.price-display {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+@media print {
+    .btn, nav, footer {
+        display: none !important;
+    }
+}
+</style>
+{% endblock %}
+

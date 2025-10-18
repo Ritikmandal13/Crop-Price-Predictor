@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Farmer Dashboard - Crop Price Predictor{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <!-- Welcome Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="fw-bold">
+                    <i class="fas fa-chart-line text-success me-2"></i>
+                    Welcome, {{ session.username }}!
+                </h1>
+                <p class="text-muted">Predict crop prices and make informed decisions</p>
+            </div>
+        </div>
+
+        <!-- Quick Action Buttons -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <a href="#predictionForm" class="btn btn-success w-100 btn-lg">
+                    <i class="fas fa-calculator me-2"></i> Price Prediction
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ url_for('crop_recommendation') }}" class="btn btn-primary w-100 btn-lg">
+                    <i class="fas fa-seedling me-2"></i> Crop Recommendation
+                </a>
+            </div>
+            <div class="col-md-4">
+                <div class="dropdown">
+                    <button class="btn btn-info w-100 btn-lg dropdown-toggle" type="button" 
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-chart-area me-2"></i> Price History
+                    </button>
+                    <ul class="dropdown-menu w-100">
+                        {% for crop in commodities %}
+                        <li><a class="dropdown-item" href="{{ url_for('price_history', commodity=crop) }}">
+                            {{ crop }}
+                        </a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Prediction Form Card -->
+            <div class="col-lg-7">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-calculator me-2"></i> Price Prediction Form
+                        </h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <form method="POST" action="{{ url_for('predict_price') }}" id="predictionForm">
+                            <!-- Commodity Selection -->
+                            <div class="mb-3">
+                                <label for="commodity" class="form-label fw-semibold">
+                                    <i class="fas fa-seedling me-1"></i> Select Commodity
+                                </label>
+                                <select class="form-select form-select-lg" id="commodity" 
+                                        name="commodity" required>
+                                    <option value="">Choose a crop...</option>
+                                    {% for crop in commodities %}
+                                    <option value="{{ crop }}">{{ crop }}</option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Predictions are based on Maharashtra state-level data
+                                </small>
+                            </div>
+
+                            <!-- Month and Year -->
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="month" class="form-label fw-semibold">
+                                        <i class="fas fa-calendar-alt me-1"></i> Month
+                                    </label>
+                                    <select class="form-select form-select-lg" id="month" name="month">
+                                        <option value="1">January</option>
+                                        <option value="2">February</option>
+                                        <option value="3">March</option>
+                                        <option value="4">April</option>
+                                        <option value="5">May</option>
+                                        <option value="6">June</option>
+                                        <option value="7">July</option>
+                                        <option value="8">August</option>
+                                        <option value="9">September</option>
+                                        <option value="10">October</option>
+                                        <option value="11">November</option>
+                                        <option value="12">December</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="year" class="form-label fw-semibold">
+                                        <i class="fas fa-calendar me-1"></i> Year
+                                    </label>
+                                    <input type="number" class="form-control form-control-lg" 
+                                           id="year" name="year" value="2025" 
+                                           min="2020" max="2030" required>
+                                </div>
+                            </div>
+
+                            <!-- Rainfall (Optional) -->
+                            <div class="mb-3">
+                                <label for="rainfall" class="form-label fw-semibold">
+                                    <i class="fas fa-cloud-rain me-1"></i> Average Rainfall (mm) 
+                                    <small class="text-muted">(Optional)</small>
+                                </label>
+                                <input type="number" class="form-control form-control-lg" 
+                                       id="rainfall" name="rainfall" step="0.1" 
+                                       placeholder="e.g., 150.5">
+                                <small class="text-muted">
+                                    <a href="https://www.weather25.com/asia/india?page=month&month=January" 
+                                       target="_blank">Check rainfall data</a>
+                                </small>
+                            </div>
+
+                            <!-- Temperature (Optional) -->
+                            <div class="mb-4">
+                                <label for="temperature" class="form-label fw-semibold">
+                                    <i class="fas fa-temperature-high me-1"></i> Average Temperature (°C) 
+                                    <small class="text-muted">(Optional)</small>
+                                </label>
+                                <input type="number" class="form-control form-control-lg" 
+                                       id="temperature" name="temperature" step="0.1" 
+                                       placeholder="e.g., 25.0">
+                                <small class="text-muted">Average temperature during growing season</small>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn-success btn-lg w-100" id="predictBtn">
+                                <i class="fas fa-magic me-2"></i> Predict Price
+                            </button>
+                        </form>
+
+                        <!-- Loading Spinner -->
+                        <div class="text-center mt-3 d-none" id="loadingSpinner">
+                            <div class="spinner-border text-success" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="text-muted mt-2">Analyzing data...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prediction History Card -->
+            <div class="col-lg-5">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-history me-2"></i> Recent Predictions
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if history %}
+                        <div class="list-group list-group-flush">
+                            {% for item in history %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1 fw-bold">{{ item[0] }}</h6>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar me-1"></i>{{ item[3] }}
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-success fs-6">₹{{ "%.2f"|format(item[2]) }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No predictions yet. Start by making your first prediction!</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Auto-select current month
+const currentMonth = new Date().getMonth() + 1;
+document.getElementById('month').value = currentMonth;
+
+// Show loading spinner on form submit
+document.getElementById('predictionForm').addEventListener('submit', function() {
+    document.getElementById('loadingSpinner').classList.remove('d-none');
+    document.getElementById('predictBtn').disabled = true;
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Crop Price Predictor{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section bg-gradient text-white py-5" style="min-height: 500px; background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);">
+    <div class="container h-100">
+        <div class="row align-items-center h-100">
+            <div class="col-lg-6 text-center text-lg-start mb-4 mb-lg-0">
+                <h1 class="display-4 fw-bold mb-3" style="color: white;">
+                    Predict Crop Prices with <span class="text-warning" style="color: #f39c12 !important;">AI</span>
+                </h1>
+                <p class="lead mb-4" style="color: white; font-size: 1.2rem;">
+                    Make informed farming decisions with machine learning-powered price predictions. 
+                    Get accurate forecasts for your crops based on rainfall and weather data.
+                </p>
+                <div class="d-flex gap-3 justify-content-center justify-content-lg-start">
+                    {% if not session.user_id %}
+                    <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg px-4">
+                        <i class="fas fa-user-plus me-2"></i> Get Started
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg px-4">
+                        <i class="fas fa-sign-in-alt me-2"></i> Login
+                    </a>
+                    {% else %}
+                        {% if session.role == 'farmer' %}
+                        <a href="{{ url_for('farmer_dashboard') }}" class="btn btn-warning btn-lg px-4">
+                            <i class="fas fa-chart-line me-2"></i> Start Predicting
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-warning btn-lg px-4">
+                            <i class="fas fa-tachometer-alt me-2"></i> Go to Dashboard
+                        </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="fas fa-tractor hero-icon" style="font-size: 12rem; opacity: 0.3; color: white;"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5 fw-bold">Why Choose Our Platform?</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4 h-100">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-brain fa-3x text-success"></i>
+                    </div>
+                    <h4 class="fw-bold">AI-Powered Predictions</h4>
+                    <p class="text-muted">
+                        Advanced Random Forest algorithms analyze historical data to provide accurate price forecasts.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4 h-100">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-map-marked-alt fa-3x text-primary"></i>
+                    </div>
+                    <h4 class="fw-bold">Location-Based Insights</h4>
+                    <p class="text-muted">
+                        Get predictions specific to your district, considering local market conditions.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card text-center p-4 h-100">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-chart-bar fa-3x text-warning"></i>
+                    </div>
+                    <h4 class="fw-bold">Real-Time Analytics</h4>
+                    <p class="text-muted">
+                        Access comprehensive analytics and trends to make informed farming decisions.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Supported Crops Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5 fw-bold">Supported Crops</h2>
+        <div class="row g-4 justify-content-center">
+            <div class="col-6 col-md-2 text-center">
+                <div class="crop-card p-3">
+                    <i class="fas fa-seedling fa-2x text-success mb-2"></i>
+                    <p class="mb-0 fw-semibold">Jowar</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-2 text-center">
+                <div class="crop-card p-3">
+                    <i class="fas fa-wheat-awn fa-2x text-warning mb-2"></i>
+                    <p class="mb-0 fw-semibold">Wheat</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-2 text-center">
+                <div class="crop-card p-3">
+                    <i class="fas fa-cotton-bureau fa-2x text-info mb-2"></i>
+                    <p class="mb-0 fw-semibold">Cotton</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-2 text-center">
+                <div class="crop-card p-3">
+                    <i class="fas fa-leaf fa-2x text-danger mb-2"></i>
+                    <p class="mb-0 fw-semibold">Sugarcane</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-2 text-center">
+                <div class="crop-card p-3">
+                    <i class="fas fa-spa fa-2x text-secondary mb-2"></i>
+                    <p class="mb-0 fw-semibold">Bajra</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5 fw-bold">How It Works</h2>
+        <div class="row g-4">
+            <div class="col-md-3 text-center">
+                <div class="step-number mb-3">1</div>
+                <h5 class="fw-bold">Register</h5>
+                <p class="text-muted">Create your farmer account in seconds</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="step-number mb-3">2</div>
+                <h5 class="fw-bold">Select Crop</h5>
+                <p class="text-muted">Choose the commodity you want to predict</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="step-number mb-3">3</div>
+                <h5 class="fw-bold">Enter Details</h5>
+                <p class="text-muted">Provide location and weather information</p>
+            </div>
+            <div class="col-md-3 text-center">
+                <div class="step-number mb-3">4</div>
+                <h5 class="fw-bold">Get Prediction</h5>
+                <p class="text-muted">Receive accurate price forecasts instantly</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section bg-success text-white py-5">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-3">Ready to Make Smarter Farming Decisions?</h2>
+        <p class="lead mb-4">Join thousands of farmers using AI-powered predictions</p>
+        {% if not session.user_id %}
+        <a href="{{ url_for('register') }}" class="btn btn-warning btn-lg px-5">
+            <i class="fas fa-rocket me-2"></i> Start Now for Free
+        </a>
+        {% endif %}
+    </div>
+</section>
+
+{% endblock %}
+

@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Price History - {{ commodity }} - Crop Price Predictor{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2 class="fw-bold">
+                    <i class="fas fa-chart-area text-success me-2"></i>
+                    Price History - {{ commodity }}
+                </h2>
+                <p class="text-muted">Historical price trends and patterns over the past years</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{{ url_for('price_forecast', commodity=commodity) }}" class="btn btn-primary mb-2">
+                    <i class="fas fa-crystal-ball me-2"></i> View Forecast
+                </a>
+                <a href="{{ url_for('farmer_dashboard') }}" class="btn btn-outline-secondary mb-2">
+                    <i class="fas fa-arrow-left me-2"></i> Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Historical Trend Chart -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-line me-2"></i> Long-term Price Trend
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if trend_chart %}
+                        <div id="trendChart"></div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-exclamation-circle fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Unable to load historical data for {{ commodity }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Seasonal Pattern Chart -->
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-calendar-alt me-2"></i> Seasonal Pattern
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if seasonal_chart %}
+                        <div id="seasonalChart"></div>
+                        <div class="alert alert-info mt-3 mb-0">
+                            <small>
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>Insight:</strong> This chart shows average prices by month, 
+                                helping you identify the best times to sell your crop.
+                            </small>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <p class="text-muted">No seasonal data available</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Year Comparison Chart -->
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-exchange-alt me-2"></i> Year-wise Comparison
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if comparison_chart %}
+                        <div id="comparisonChart"></div>
+                        <div class="alert alert-warning mt-3 mb-0">
+                            <small>
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Note:</strong> Compare price trends across recent years to 
+                                understand market volatility and patterns.
+                            </small>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5">
+                            <p class="text-muted">No comparison data available</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Insights -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0 bg-light">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">
+                            <i class="fas fa-chart-bar me-2 text-success"></i> Key Insights
+                        </h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="insight-box p-3 bg-white rounded mb-3">
+                                    <i class="fas fa-arrow-trend-up fa-2x text-success mb-2"></i>
+                                    <h6 class="fw-bold">Price Trends</h6>
+                                    <p class="mb-0 small text-muted">
+                                        Historical data shows seasonal variations. Plan your sowing 
+                                        and selling accordingly.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="insight-box p-3 bg-white rounded mb-3">
+                                    <i class="fas fa-cloud-rain fa-2x text-primary mb-2"></i>
+                                    <h6 class="fw-bold">Weather Impact</h6>
+                                    <p class="mb-0 small text-muted">
+                                        Rainfall patterns significantly affect prices. Higher rainfall 
+                                        often leads to better yields.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="insight-box p-3 bg-white rounded mb-3">
+                                    <i class="fas fa-money-bill-trend-up fa-2x text-warning mb-2"></i>
+                                    <h6 class="fw-bold">Market Patterns</h6>
+                                    <p class="mb-0 small text-muted">
+                                        Understand market cycles to maximize your profits by selling 
+                                        at peak prices.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Render Trend Chart
+    {% if trend_chart %}
+    var trendData = {{ trend_chart | safe }};
+    Plotly.newPlot('trendChart', trendData.data, trendData.layout, {responsive: true});
+    {% endif %}
+
+    // Render Seasonal Chart
+    {% if seasonal_chart %}
+    var seasonalData = {{ seasonal_chart | safe }};
+    Plotly.newPlot('seasonalChart', seasonalData.data, seasonalData.layout, {responsive: true});
+    {% endif %}
+
+    // Render Comparison Chart
+    {% if comparison_chart %}
+    var comparisonData = {{ comparison_chart | safe }};
+    Plotly.newPlot('comparisonChart', comparisonData.data, comparisonData.layout, {responsive: true});
+    {% endif %}
+</script>
+{% endblock %}
+

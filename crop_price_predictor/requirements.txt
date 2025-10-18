@@ -1,0 +1,33 @@
+# Crop Price Predictor - Dependencies
+# Python 3.9+ required
+
+# Web Framework
+Flask==3.0.0
+Werkzeug==3.0.1
+
+# Machine Learning (Updated for Python 3.13 compatibility)
+scikit-learn>=1.4.0
+numpy>=1.26.0
+pandas>=2.1.0
+
+# Data Processing
+joblib>=1.3.0
+
+# Data Visualization
+plotly>=5.18.0
+matplotlib>=3.8.0
+seaborn>=0.13.0
+
+# Database (Optional - only if using MongoDB)
+# Flask-PyMongo==2.3.0
+# pymongo==4.6.0
+
+# Environment Variables
+python-dotenv>=1.0.0
+
+# Deployment (Hugging Face Spaces)
+gunicorn>=21.2.0
+
+# File Upload
+python-multipart>=0.0.6
+
