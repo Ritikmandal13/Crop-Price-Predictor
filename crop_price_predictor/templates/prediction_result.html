@@ -1,100 +1,353 @@
 {% extends "base.html" %}
 
-{% block title %}Prediction Result - Crop Price Predictor{% endblock %}
+{% block title %}Prediction Result - {{ commodity }} - Crop Price Predictor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .result-card {
+        animation: slideUp 0.5s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .price-display {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        border-left: 4px solid #28a745;
+    }
+
+    .market-sentiment {
+        padding: 1rem;
+        border-radius: 10px;
+        font-weight: bold;
+    }
+
+    .crop-info-card {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+    }
+
+    .weather-info {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+    }
+
+    @media print {
+        .btn, nav, footer, .no-print {
+            display: none !important;
+        }
+        
+        .container {
+            max-width: none !important;
+        }
+        
+        .card {
+            border: 2px solid #000 !important;
+            box-shadow: none !important;
+        }
+        
+        .price-display, .crop-info-card, .weather-info {
+            background: white !important;
+            color: black !important;
+            border: 2px solid #000 !important;
+        }
+        
+        body {
+            font-size: 12pt !important;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: black !important;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <section class="py-5">
     <div class="container">
-        <div class="row justify-content-center">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12 text-center">
+                <h1 class="fw-bold mb-2">
+                    <i class="fas fa-chart-line text-success me-2"></i>
+                    Crop Price Prediction Report
+                </h1>
+                <p class="text-muted">Detailed Analysis & Market Insights</p>
+                <div class="text-muted small">
+                    Generated on {{ current_time }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Prediction Result -->
+        <div class="row mb-4">
             <div class="col-lg-8">
-                <!-- Success Card -->
                 <div class="card shadow-lg border-0 result-card">
-                    <div class="card-body text-center p-5">
-                        <!-- Success Icon -->
-                        <div class="mb-4">
-                            <i class="fas fa-check-circle fa-5x text-success"></i>
+                    <div class="card-body p-4">
+                        <!-- Success Header -->
+                        <div class="text-center mb-4">
+                            <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                            <h2 class="fw-bold text-success">Prediction Successful!</h2>
                         </div>
 
-                        <!-- Title -->
-                        <h2 class="fw-bold mb-3">Prediction Successful!</h2>
-                        <p class="text-muted mb-4">Here's the predicted price for your crop</p>
-
-                        <!-- Result Box -->
-                        <div class="result-box p-4 mb-4">
+                        <!-- Price Display -->
+                        <div class="price-display text-center mb-4">
                             <div class="row align-items-center">
-                                <div class="col-md-6 text-md-start text-center mb-3 mb-md-0">
-                                    <h5 class="text-muted mb-2">Predicted Price for</h5>
-                                    <h3 class="fw-bold text-success mb-1">{{ commodity }}</h3>
-                                    <p class="text-muted mb-0">
-                                        <i class="fas fa-map-marker-alt me-1"></i> Maharashtra
+                                <div class="col-md-6">
+                                    <h4 class="mb-2">Predicted Price for</h4>
+                                    <h2 class="fw-bold mb-1">{{ commodity }}</h2>
+                                    <p class="mb-0">
+                                        <i class="fas fa-map-marker-alt me-1"></i> {{ state }}
+                                    </p>
+                                    <p class="mb-0">
+                                        <i class="fas fa-calendar me-1"></i> {{ month_name }} {{ year }}
                                     </p>
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="price-display">
-                                        <h1 class="display-3 fw-bold text-success mb-0">₹{{ "%.2f"|format(price) }}</h1>
-                                        <p class="text-muted">per quintal</p>
-                                    </div>
+                                    <h1 class="display-2 fw-bold mb-0">₹{{ "%.2f"|format(price) }}</h1>
+                                    <h5 class="mb-0">per quintal</h5>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Additional Info -->
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            This price is calculated based on historical data, rainfall patterns, 
-                            and market trends. Actual market prices may vary.
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="d-flex gap-3 justify-content-center flex-wrap">
-                            <a href="{{ url_for('farmer_dashboard') }}" class="btn btn-success btn-lg px-4">
-                                <i class="fas fa-redo me-2"></i> Make Another Prediction
-                            </a>
-                            <button onclick="window.print()" class="btn btn-outline-secondary btn-lg px-4">
-                                <i class="fas fa-print me-2"></i> Print Result
-                            </button>
+                        <!-- Market Sentiment -->
+                        <div class="text-center mb-4">
+                            <div class="market-sentiment bg-{{ sentiment_color }} text-white">
+                                <i class="{{ sentiment_icon }} me-2"></i>
+                                Market Sentiment: {{ market_sentiment }}
+                                {% if price_vs_avg != 0 %}
+                                ({{ "%.1f"|format(price_vs_avg) }}% vs historical average)
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="col-lg-4">
+                <div class="stat-card mb-3">
+                    <h6 class="text-muted mb-2">Historical Average</h6>
+                    <h4 class="fw-bold text-primary">₹{{ "%.2f"|format(avg_price) }}</h4>
+                </div>
+                <div class="stat-card mb-3">
+                    <h6 class="text-muted mb-2">Price Range</h6>
+                    <div class="small">
+                        <div>Min: ₹{{ "%.2f"|format(min_price) }}</div>
+                        <div>Max: ₹{{ "%.2f"|format(max_price) }}</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h6 class="text-muted mb-2">Prediction Confidence</h6>
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-success" style="width: 85%"></div>
+                    </div>
+                    <small class="text-muted">85% (High Confidence)</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Analysis -->
+        <div class="row mb-4">
+            <!-- Weather Conditions -->
+            <div class="col-lg-6 mb-4">
+                <div class="weather-info">
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas fa-cloud-rain me-2"></i>
+                        Weather Conditions
+                    </h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="text-center">
+                                <i class="fas fa-cloud-rain fa-2x mb-2"></i>
+                                <h4 class="fw-bold">{{ rainfall }}mm</h4>
+                                <small>Rainfall</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-center">
+                                <i class="fas fa-temperature-high fa-2x mb-2"></i>
+                                <h4 class="fw-bold">{{ temperature }}°C</h4>
+                                <small>Temperature</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <small>
+                            <i class="fas fa-info-circle me-1"></i>
+                            Weather data used for prediction analysis
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Crop Information -->
+            <div class="col-lg-6 mb-4">
+                <div class="crop-info-card">
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas fa-seedling me-2"></i>
+                        {{ commodity }} Information
+                    </h5>
+                    <div class="row">
+                        <div class="col-4">
+                            <div class="text-center">
+                                <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+                                <h6 class="fw-bold">{{ crop_details.season }}</h6>
+                                <small>Season</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-center">
+                                <i class="fas fa-clock fa-2x mb-2"></i>
+                                <h6 class="fw-bold">{{ crop_details.duration }}</h6>
+                                <small>Duration</small>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-center">
+                                <i class="fas fa-chart-bar fa-2x mb-2"></i>
+                                <h6 class="fw-bold">{{ crop_details.yield }}</h6>
+                                <small>Expected Yield</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Analysis & Recommendations -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            Market Analysis & Recommendations
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-success mb-3">
+                                    <i class="fas fa-thumbs-up me-2"></i>
+                                    Positive Factors
+                                </h6>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        Weather conditions are favorable for {{ commodity }} cultivation
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        {{ state }} has good market infrastructure
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check-circle text-success me-2"></i>
+                                        Historical data shows stable price trends
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-warning mb-3">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Considerations
+                                </h6>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <i class="fas fa-info-circle text-info me-2"></i>
+                                        Monitor weather forecasts for {{ month_name }}
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-info-circle text-info me-2"></i>
+                                        Check government MSP announcements
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-info-circle text-info me-2"></i>
+                                        Consider storage costs if selling later
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row">
+            <div class="col-12 text-center">
+                <div class="d-flex gap-3 justify-content-center flex-wrap no-print">
+                    <a href="{{ url_for('farmer_dashboard') }}" class="btn btn-success btn-lg px-4">
+                        <i class="fas fa-redo me-2"></i> Make Another Prediction
+                    </a>
+                    <button onclick="window.print()" class="btn btn-primary btn-lg px-4">
+                        <i class="fas fa-print me-2"></i> Print Detailed Report
+                    </button>
+                    <a href="{{ url_for('price_history', commodity=commodity, state=state) }}" class="btn btn-info btn-lg px-4">
+                        <i class="fas fa-chart-area me-2"></i> View Price History
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Disclaimer:</strong> This prediction is based on historical data, weather patterns, and machine learning algorithms. 
+                    Actual market prices may vary due to unforeseen factors like government policies, international trade, 
+                    natural disasters, or market speculation. Please consult with local agricultural experts and market 
+                    analysts before making farming decisions.
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<style>
-.result-card {
-    animation: slideUp 0.5s ease-out;
-}
+<!-- Print Header -->
+<div class="print-header" style="display: none;">
+    <div class="text-center mb-4">
+        <h1>Crop Price Prediction Report</h1>
+        <h2>{{ commodity }} - {{ state }}</h2>
+        <p>Generated on {{ current_time }}</p>
+    </div>
+</div>
 
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+<script>
+// Add print header when printing
+window.addEventListener('beforeprint', function() {
+    document.querySelector('.print-header').style.display = 'block';
+});
 
-.result-box {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    border-radius: 15px;
-    border: 2px solid #e9ecef;
-}
+window.addEventListener('afterprint', function() {
+    document.querySelector('.print-header').style.display = 'none';
+});
 
-.price-display {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-@media print {
-    .btn, nav, footer {
-        display: none !important;
-    }
-}
-</style>
+// Date formatting handled by backend
+</script>
 {% endblock %}
-

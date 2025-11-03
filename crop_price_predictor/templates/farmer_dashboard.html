@@ -56,6 +56,24 @@
                     </div>
                     <div class="card-body p-4">
                         <form method="POST" action="{{ url_for('predict_price') }}" id="predictionForm">
+                            <!-- State Selection -->
+                            <div class="mb-3">
+                                <label for="state" class="form-label fw-semibold">
+                                    <i class="fas fa-map-marker-alt me-1"></i> Select State
+                                </label>
+                                <select class="form-select form-select-lg" id="state" 
+                                        name="state" required>
+                                    <option value="">Choose your state...</option>
+                                    {% for state in states %}
+                                    <option value="{{ state }}">{{ state }}</option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Select the state where you want to predict crop prices
+                                </small>
+                            </div>
+
                             <!-- Commodity Selection -->
                             <div class="mb-3">
                                 <label for="commodity" class="form-label fw-semibold">
@@ -70,7 +88,7 @@
                                 </select>
                                 <small class="text-muted">
                                     <i class="fas fa-info-circle me-1"></i>
-                                    Predictions are based on Maharashtra state-level data
+                                    Available crops will vary by selected state
                                 </small>
                             </div>
 
@@ -188,9 +206,49 @@
 </section>
 
 <script>
-// Auto-select current month
-const currentMonth = new Date().getMonth() + 1;
-document.getElementById('month').value = currentMonth;
+// State-crop mapping
+const stateCrops = {
+    'Maharashtra': ['Jowar', 'Cotton', 'Sugarcane', 'Wheat', 'Bajra'],
+    'Punjab': ['Wheat', 'Bajra', 'Cotton', 'Sugarcane'],
+    'Karnataka': ['Jowar', 'Cotton', 'Sugarcane', 'Wheat'],
+    'Uttar Pradesh': ['Wheat', 'Sugarcane', 'Bajra'],
+    'Gujarat': ['Cotton', 'Wheat', 'Bajra'],
+    'Madhya Pradesh': ['Jowar', 'Wheat', 'Cotton']
+};
+
+// Update crops dropdown when state changes
+document.getElementById('state').addEventListener('change', function() {
+    const selectedState = this.value;
+    const commoditySelect = document.getElementById('commodity');
+    
+    // Clear current options
+    commoditySelect.innerHTML = '<option value="">Choose a crop...</option>';
+    
+    // Add crops for selected state
+    if (selectedState && stateCrops[selectedState]) {
+        stateCrops[selectedState].forEach(crop => {
+            const option = document.createElement('option');
+            option.value = crop;
+            option.textContent = crop;
+            commoditySelect.appendChild(option);
+        });
+        
+        commoditySelect.disabled = false;
+        
+        // Update info text
+        const infoText = commoditySelect.nextElementSibling;
+        if (infoText && infoText.classList.contains('text-muted')) {
+            infoText.innerHTML = `<i class="fas fa-info-circle me-1"></i> ${stateCrops[selectedState].length} crop(s) available in ${selectedState}`;
+        }
+    } else {
+        commoditySelect.disabled = true;
+    }
+});
+
+// Auto-select current month and year
+const currentDate = new Date();
+document.getElementById('month').value = currentDate.getMonth() + 1;
+document.getElementById('year').value = currentDate.getFullYear();
 
 // Show loading spinner on form submit
 document.getElementById('predictionForm').addEventListener('submit', function() {
@@ -198,5 +256,8 @@ document.getElementById('predictionForm').addEventListener('submit', function() 
     document.getElementById('predictBtn').disabled = true;
 });
 </script>
+
+<!-- Auto-fill weather data script -->
+<script src="{{ url_for('static', filename='js/weather_auto_fill.js') }}"></script>
 {% endblock %}
 

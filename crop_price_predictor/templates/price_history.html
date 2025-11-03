@@ -15,8 +15,16 @@
                 <h2 class="fw-bold">
                     <i class="fas fa-chart-area text-success me-2"></i>
                     Price History - {{ commodity }}
+                    {% if state %}
+                    <small class="text-muted">({{ state }})</small>
+                    {% endif %}
                 </h2>
-                <p class="text-muted">Historical price trends and patterns over the past years</p>
+                <p class="text-muted">
+                    Historical price trends and patterns over the past years
+                    {% if state %}
+                    in {{ state }}
+                    {% endif %}
+                </p>
             </div>
             <div class="col-md-4 text-md-end">
                 <a href="{{ url_for('price_forecast', commodity=commodity) }}" class="btn btn-primary mb-2">

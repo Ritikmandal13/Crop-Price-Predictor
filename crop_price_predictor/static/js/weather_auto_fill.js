@@ -1,0 +1,377 @@
+
+// Auto-fill weather data based on state and month
+function autoFillWeatherData() {
+    const stateSelect = document.getElementById('state');
+    const monthSelect = document.getElementById('month');
+    const rainfallInput = document.getElementById('rainfall');
+    const temperatureInput = document.getElementById('temperature');
+    
+    if (!stateSelect || !monthSelect || !rainfallInput || !temperatureInput) {
+        return;
+    }
+    
+    const selectedState = stateSelect.value;
+    const selectedMonth = parseInt(monthSelect.value);
+    
+    if (!selectedState || !selectedMonth) {
+        return;
+    }
+    
+    // Weather averages by state and month
+    const weatherAverages = {
+    "Maharashtra": {
+        "1": {
+            "rainfall": 17.6,
+            "temperature": 18.3
+        },
+        "2": {
+            "rainfall": 25.7,
+            "temperature": 18.2
+        },
+        "3": {
+            "rainfall": 32.7,
+            "temperature": 37.6
+        },
+        "4": {
+            "rainfall": 40.7,
+            "temperature": 38.2
+        },
+        "5": {
+            "rainfall": 57.7,
+            "temperature": 37.9
+        },
+        "6": {
+            "rainfall": 161.0,
+            "temperature": 26.2
+        },
+        "7": {
+            "rainfall": 275.5,
+            "temperature": 25.9
+        },
+        "8": {
+            "rainfall": 246.7,
+            "temperature": 25.9
+        },
+        "9": {
+            "rainfall": 168.8,
+            "temperature": 26.3
+        },
+        "10": {
+            "rainfall": 74.4,
+            "temperature": 27.4
+        },
+        "11": {
+            "rainfall": 26.6,
+            "temperature": 27.4
+        },
+        "12": {
+            "rainfall": 12.6,
+            "temperature": 18.1
+        }
+    },
+    "Punjab": {
+        "1": {
+            "rainfall": 11.8,
+            "temperature": 8.0
+        },
+        "2": {
+            "rainfall": 16.4,
+            "temperature": 8.4
+        },
+        "3": {
+            "rainfall": 21.3,
+            "temperature": 41.9
+        },
+        "4": {
+            "rainfall": 26.6,
+            "temperature": 41.6
+        },
+        "5": {
+            "rainfall": 36.6,
+            "temperature": 41.9
+        },
+        "6": {
+            "rainfall": 105.3,
+            "temperature": 28.3
+        },
+        "7": {
+            "rainfall": 178.3,
+            "temperature": 28.3
+        },
+        "8": {
+            "rainfall": 160.7,
+            "temperature": 28.1
+        },
+        "9": {
+            "rainfall": 106.9,
+            "temperature": 28.2
+        },
+        "10": {
+            "rainfall": 48.0,
+            "temperature": 24.3
+        },
+        "11": {
+            "rainfall": 17.7,
+            "temperature": 23.8
+        },
+        "12": {
+            "rainfall": 10.0,
+            "temperature": 7.9
+        }
+    },
+    "Karnataka": {
+        "1": {
+            "rainfall": 15.2,
+            "temperature": 20.3
+        },
+        "2": {
+            "rainfall": 21.8,
+            "temperature": 20.2
+        },
+        "3": {
+            "rainfall": 27.9,
+            "temperature": 34.3
+        },
+        "4": {
+            "rainfall": 34.2,
+            "temperature": 34.1
+        },
+        "5": {
+            "rainfall": 50.1,
+            "temperature": 34.5
+        },
+        "6": {
+            "rainfall": 138.1,
+            "temperature": 23.9
+        },
+        "7": {
+            "rainfall": 235.0,
+            "temperature": 23.8
+        },
+        "8": {
+            "rainfall": 209.9,
+            "temperature": 24.3
+        },
+        "9": {
+            "rainfall": 141.7,
+            "temperature": 23.9
+        },
+        "10": {
+            "rainfall": 63.5,
+            "temperature": 26.0
+        },
+        "11": {
+            "rainfall": 23.2,
+            "temperature": 26.5
+        },
+        "12": {
+            "rainfall": 11.4,
+            "temperature": 20.1
+        }
+    },
+    "Uttar Pradesh": {
+        "1": {
+            "rainfall": 15.6,
+            "temperature": 12.0
+        },
+        "2": {
+            "rainfall": 22.5,
+            "temperature": 12.4
+        },
+        "3": {
+            "rainfall": 28.7,
+            "temperature": 39.4
+        },
+        "4": {
+            "rainfall": 36.0,
+            "temperature": 39.6
+        },
+        "5": {
+            "rainfall": 51.7,
+            "temperature": 39.4
+        },
+        "6": {
+            "rainfall": 145.2,
+            "temperature": 27.6
+        },
+        "7": {
+            "rainfall": 251.0,
+            "temperature": 28.1
+        },
+        "8": {
+            "rainfall": 220.9,
+            "temperature": 27.9
+        },
+        "9": {
+            "rainfall": 152.4,
+            "temperature": 28.0
+        },
+        "10": {
+            "rainfall": 66.8,
+            "temperature": 26.2
+        },
+        "11": {
+            "rainfall": 23.7,
+            "temperature": 25.9
+        },
+        "12": {
+            "rainfall": 11.7,
+            "temperature": 12.2
+        }
+    },
+    "Gujarat": {
+        "1": {
+            "rainfall": 10.2,
+            "temperature": 15.2
+        },
+        "2": {
+            "rainfall": 14.0,
+            "temperature": 15.0
+        },
+        "3": {
+            "rainfall": 18.3,
+            "temperature": 41.7
+        },
+        "4": {
+            "rainfall": 22.3,
+            "temperature": 41.5
+        },
+        "5": {
+            "rainfall": 31.9,
+            "temperature": 41.3
+        },
+        "6": {
+            "rainfall": 87.6,
+            "temperature": 29.2
+        },
+        "7": {
+            "rainfall": 149.3,
+            "temperature": 29.4
+        },
+        "8": {
+            "rainfall": 133.7,
+            "temperature": 28.7
+        },
+        "9": {
+            "rainfall": 93.1,
+            "temperature": 29.6
+        },
+        "10": {
+            "rainfall": 39.9,
+            "temperature": 28.1
+        },
+        "11": {
+            "rainfall": 15.4,
+            "temperature": 28.0
+        },
+        "12": {
+            "rainfall": 10.0,
+            "temperature": 14.9
+        }
+    },
+    "Madhya Pradesh": {
+        "1": {
+            "rainfall": 14.3,
+            "temperature": 13.0
+        },
+        "2": {
+            "rainfall": 20.5,
+            "temperature": 12.8
+        },
+        "3": {
+            "rainfall": 26.2,
+            "temperature": 38.5
+        },
+        "4": {
+            "rainfall": 32.5,
+            "temperature": 38.9
+        },
+        "5": {
+            "rainfall": 46.6,
+            "temperature": 39.3
+        },
+        "6": {
+            "rainfall": 128.3,
+            "temperature": 27.4
+        },
+        "7": {
+            "rainfall": 219.3,
+            "temperature": 27.3
+        },
+        "8": {
+            "rainfall": 196.2,
+            "temperature": 27.2
+        },
+        "9": {
+            "rainfall": 136.0,
+            "temperature": 27.0
+        },
+        "10": {
+            "rainfall": 60.2,
+            "temperature": 26.0
+        },
+        "11": {
+            "rainfall": 22.0,
+            "temperature": 26.3
+        },
+        "12": {
+            "rainfall": 11.1,
+            "temperature": 12.6
+        }
+    }
+};
+    
+    if (weatherAverages[selectedState] && weatherAverages[selectedState][selectedMonth]) {
+        const avg = weatherAverages[selectedState][selectedMonth];
+        
+        // Only auto-fill if fields are empty
+        if (!rainfallInput.value || rainfallInput.value === '') {
+            rainfallInput.value = avg.rainfall;
+        }
+        
+        if (!temperatureInput.value || temperatureInput.value === '') {
+            temperatureInput.value = avg.temperature;
+        }
+        
+        // Show info message
+        showWeatherInfo(selectedState, selectedMonth, avg);
+    }
+}
+
+function showWeatherInfo(state, month, avg) {
+    // Create or update info message
+    let infoDiv = document.getElementById('weather-info');
+    if (!infoDiv) {
+        infoDiv = document.createElement('div');
+        infoDiv.id = 'weather-info';
+        infoDiv.className = 'alert alert-info mt-2';
+        document.getElementById('temperature').parentNode.appendChild(infoDiv);
+    }
+    
+    const monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    infoDiv.innerHTML = `
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Auto-filled weather data for ${state} in ${monthNames[month]}:</strong><br>
+        Average Rainfall: ${avg.rainfall}mm | Average Temperature: ${avg.temperature}°C<br>
+        <small class="text-muted">You can modify these values if you have more accurate data.</small>
+    `;
+}
+
+// Add event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const stateSelect = document.getElementById('state');
+    const monthSelect = document.getElementById('month');
+    
+    if (stateSelect) {
+        stateSelect.addEventListener('change', autoFillWeatherData);
+    }
+    
+    if (monthSelect) {
+        monthSelect.addEventListener('change', autoFillWeatherData);
+    }
+    
+    // Auto-fill on page load if state and month are already selected
+    setTimeout(autoFillWeatherData, 100);
+});

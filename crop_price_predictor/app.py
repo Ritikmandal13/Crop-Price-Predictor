@@ -19,6 +19,7 @@ from utils.ml_handler import MLModelHandler
 from utils.helpers import allowed_file, get_current_year
 from utils.crop_recommendation import crop_recommender
 from utils.price_visualization import price_visualizer
+from utils.state_config import state_config
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -158,14 +159,15 @@ def farmer_dashboard():
     if session.get('role') != 'farmer':
         return redirect(url_for('admin_dashboard'))
     
-    # Get available commodities and locations
+    # Get available commodities and states
     commodities = ml_handler.get_available_commodities()
+    states = state_config.get_all_states()
     
     # Get farmer's prediction history
     db = get_db()
     cursor = db.cursor()
     cursor.execute(
-        '''SELECT commodity, location, predicted_price, prediction_date 
+        '''SELECT commodity, state, predicted_price, prediction_date 
            FROM predictions 
            WHERE user_id = ? 
            ORDER BY prediction_date DESC 
@@ -175,7 +177,8 @@ def farmer_dashboard():
     history = cursor.fetchall()
     
     return render_template('farmer_dashboard.html', 
-                         commodities=commodities, 
+                         commodities=commodities,
+                         states=states,
                          history=history)
 
 @app.route('/farmer/predict', methods=['POST'])
@@ -188,17 +191,21 @@ def predict_price():
     try:
         # Get form data
         commodity = request.form.get('commodity')
-        location = 'Maharashtra'  # Default to state-level since predictions are state-wide
+        state = request.form.get('state', 'Maharashtra')  # Get selected state
         
         # Handle optional rainfall field - default to 100 if empty
         rainfall_input = request.form.get('rainfall', '100').strip()
         rainfall = float(rainfall_input) if rainfall_input else 100.0
         
+        # Handle optional temperature field - default to 25 if empty
+        temperature_input = request.form.get('temperature', '25').strip()
+        temperature = float(temperature_input) if temperature_input else 25.0
+        
         month = int(request.form.get('month', datetime.now().month))
         year = int(request.form.get('year', datetime.now().year))
         
-        # Make prediction
-        prediction = ml_handler.predict(commodity, location, month, year, rainfall)
+        # Make prediction with state parameter and temperature
+        prediction = ml_handler.predict(commodity, state, month, year, rainfall, temperature)
         
         if prediction['success']:
             # Save prediction to database
@@ -206,18 +213,22 @@ def predict_price():
             cursor = db.cursor()
             cursor.execute(
                 '''INSERT INTO predictions 
-                   (user_id, commodity, location, rainfall, month, year, predicted_price) 
-                   VALUES (?, ?, ?, ?, ?, ?, ?)''',
-                (session['user_id'], commodity, location, rainfall, month, year, 
+                   (user_id, commodity, state, rainfall, temperature, month, year, predicted_price) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+                (session['user_id'], commodity, state, rainfall, temperature, month, year, 
                  prediction['predicted_price'])
             )
             db.commit()
             
-            flash(f"Prediction successful! Price: ₹{prediction['predicted_price']:.2f} per quintal", 'success')
+            flash(f"Prediction successful for {state}! Price: ₹{prediction['predicted_price']:.2f} per quintal", 'success')
             return redirect(url_for('prediction_result', 
                                   commodity=commodity, 
-                                  location=location, 
-                                  price=prediction['predicted_price']))
+                                  state=state, 
+                                  price=prediction['predicted_price'],
+                                  rainfall=rainfall,
+                                  temperature=temperature,
+                                  month=month,
+                                  year=year))
         else:
             flash(f"Prediction failed: {prediction['error']}", 'danger')
             return redirect(url_for('farmer_dashboard'))
@@ -229,15 +240,103 @@ def predict_price():
 @app.route('/farmer/result')
 @login_required
 def prediction_result():
-    """Display prediction result"""
+    """Display prediction result with detailed analysis"""
     commodity = request.args.get('commodity')
-    location = request.args.get('location')
+    state = request.args.get('state', 'Maharashtra')
     price = float(request.args.get('price'))
+    rainfall = request.args.get('rainfall', '100')
+    temperature = request.args.get('temperature', '25')
+    month = request.args.get('month', '1')
+    year = request.args.get('year', '2025')
+    
+    # Get additional data for detailed analysis
+    from utils.price_visualization import PriceVisualization
+    from utils.state_config import state_config
+    from datetime import datetime
+    
+    price_visualizer = PriceVisualization()
+    
+    # Get historical data for comparison
+    try:
+        historical_data = price_visualizer.load_historical_data(commodity, state)
+        if historical_data is not None and not historical_data.empty:
+            # Calculate statistics
+            avg_price = historical_data['WPI'].mean()
+            min_price = historical_data['WPI'].min()
+            max_price = historical_data['WPI'].max()
+            
+            # Convert to actual prices
+            avg_actual_price = price_visualizer._wpi_to_price(avg_price, commodity)
+            min_actual_price = price_visualizer._wpi_to_price(min_price, commodity)
+            max_actual_price = price_visualizer._wpi_to_price(max_price, commodity)
+            
+            # Price comparison
+            price_vs_avg = ((price - avg_actual_price) / avg_actual_price) * 100
+            
+            # Market sentiment
+            if price_vs_avg > 10:
+                market_sentiment = "Bullish"
+                sentiment_color = "success"
+                sentiment_icon = "fas fa-arrow-up"
+            elif price_vs_avg < -10:
+                market_sentiment = "Bearish"
+                sentiment_color = "danger"
+                sentiment_icon = "fas fa-arrow-down"
+            else:
+                market_sentiment = "Stable"
+                sentiment_color = "info"
+                sentiment_icon = "fas fa-minus"
+        else:
+            avg_actual_price = min_actual_price = max_actual_price = 0
+            price_vs_avg = 0
+            market_sentiment = "Unknown"
+            sentiment_color = "secondary"
+            sentiment_icon = "fas fa-question"
+    except:
+        avg_actual_price = min_actual_price = max_actual_price = 0
+        price_vs_avg = 0
+        market_sentiment = "Unknown"
+        sentiment_color = "secondary"
+        sentiment_icon = "fas fa-question"
+    
+    # Get month name
+    month_names = ['', 'January', 'February', 'March', 'April', 'May', 'June',
+                   'July', 'August', 'September', 'October', 'November', 'December']
+    month_name = month_names[int(month)]
+    
+    # Get current time
+    from datetime import datetime
+    current_time = datetime.now().strftime('%B %d, %Y at %I:%M:%S %p')
+    
+    # Get crop information
+    crop_info = {
+        'Jowar': {'season': 'Kharif', 'duration': '4-5 months', 'yield': '15-20 quintals/hectare'},
+        'Wheat': {'season': 'Rabi', 'duration': '4-5 months', 'yield': '40-50 quintals/hectare'},
+        'Cotton': {'season': 'Kharif', 'duration': '6-7 months', 'yield': '15-20 quintals/hectare'},
+        'Sugarcane': {'season': 'Year-round', 'duration': '12-18 months', 'yield': '80-100 tons/hectare'},
+        'Bajra': {'season': 'Kharif', 'duration': '3-4 months', 'yield': '20-25 quintals/hectare'}
+    }
+    
+    crop_details = crop_info.get(commodity, {'season': 'Unknown', 'duration': 'Unknown', 'yield': 'Unknown'})
     
     return render_template('prediction_result.html', 
                          commodity=commodity, 
-                         location=location, 
-                         price=price)
+                         state=state, 
+                         price=price,
+                         rainfall=rainfall,
+                         temperature=temperature,
+                         month=month,
+                         month_name=month_name,
+                         year=year,
+                         avg_price=avg_actual_price,
+                         min_price=min_actual_price,
+                         max_price=max_actual_price,
+                         price_vs_avg=price_vs_avg,
+                         market_sentiment=market_sentiment,
+                         sentiment_color=sentiment_color,
+                         sentiment_icon=sentiment_icon,
+                         crop_details=crop_details,
+                         current_time=current_time)
 
 # ==================== CROP RECOMMENDATION ROUTES ====================
 
@@ -266,17 +365,28 @@ def crop_recommendation():
 # ==================== PRICE HISTORY & VISUALIZATION ROUTES ====================
 
 @app.route('/farmer/price-history/<commodity>')
+@app.route('/farmer/price-history/<commodity>/<state>')
 @login_required
-def price_history(commodity):
-    """Display historical price trends for a commodity"""
+def price_history(commodity, state=None):
+    """Display historical price trends for a commodity in a specific state"""
     try:
-        # Generate charts
-        trend_chart = price_visualizer.create_historical_trend_chart(commodity)
-        seasonal_chart = price_visualizer.create_seasonal_pattern_chart(commodity)
-        comparison_chart = price_visualizer.create_year_comparison_chart(commodity)
+        # If no state specified, redirect to state selection
+        if not state:
+            states = state_config.get_all_states()
+            # Now show all states, not just those with crop data
+            available_states = list(states)  # Every state
+            return render_template('select_state_for_history.html',
+                                 commodity=commodity,
+                                 states=available_states)
+        
+        # Generate charts for specific state
+        trend_chart = price_visualizer.create_historical_trend_chart(commodity, state)
+        seasonal_chart = price_visualizer.create_seasonal_pattern_chart(commodity, state)
+        comparison_chart = price_visualizer.create_year_comparison_chart(commodity, state)
         
         return render_template('price_history.html',
                              commodity=commodity,
+                             state=state,
                              trend_chart=trend_chart,
                              seasonal_chart=seasonal_chart,
                              comparison_chart=comparison_chart)
@@ -319,7 +429,7 @@ def admin_dashboard():
     
     # Get recent predictions
     cursor.execute(
-        '''SELECT p.commodity, p.location, p.predicted_price, p.prediction_date, u.username
+        '''SELECT p.commodity, p.state, p.predicted_price, p.prediction_date, u.username
            FROM predictions p
            JOIN users u ON p.user_id = u.id
            ORDER BY p.prediction_date DESC
@@ -399,7 +509,7 @@ def view_logs():
     cursor = db.cursor()
     
     cursor.execute(
-        '''SELECT p.id, u.username, p.commodity, p.location, p.predicted_price, 
+        '''SELECT p.id, u.username, p.commodity, p.state, p.predicted_price, 
                   p.rainfall, p.month, p.year, p.prediction_date
            FROM predictions p
            JOIN users u ON p.user_id = u.id

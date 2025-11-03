@@ -1,0 +1,60 @@
+AgriSmart - Crop Price Predictor (Client Guide)
+===============================================
+
+1. Project Overview
+------------------
+An AI-powered web application helping farmers and admins forecast crop prices for Indian states.
+- Uses machine learning on historical and weather data (rainfall, temperature)
+- Predicts prices for: Jowar, Wheat, Cotton, Sugarcane, Bajra
+- Provides price history, analytics, and crop advice
+
+2. Features
+-----------
+- Price prediction for different crops and states
+- Farmer/admin user accounts
+- Dashboard with price history and statistics
+- Upload new data (admins)
+- Retrain models with latest data (admins)
+
+3. Prerequisites
+----------------
+- Python 3.9 or newer
+- pip (Python package tool)
+- (Optional): Virtual environment tool (venv)
+
+4. Setup Steps
+--------------
+From the main project folder, run these commands in order:
+
+1. Open terminal and go to the app folder:
+   cd Crop-Price-Prediction-Using-Random-Forest/crop_price_predictor
+
+2. (Recommended) Create and activate virtual environment:
+   python -m venv venv
+   .\venv\Scripts\activate     # On Windows
+
+3. Install all required Python packages:
+   pip install -r requirements.txt
+
+4. Initialize the database:
+   python -c "from auth.database import init_db; init_db()"
+
+5. Run the app:
+   python app.py
+
+Open a browser and go to: http://127.0.0.1:5000
+
+5. Accounts (Demo)
+------------------
+Farmer:
+  Username: farmer   Password: farmer123
+Admin:
+  Username: admin    Password: admin123
+
+6. FAQ & Help
+-------------
+- If a port is busy, use another: $env:PORT=5001; python app.py
+- To refresh data, admin uploads new CSVs & retrains in dashboard.
+- UI is mobile-friendly and works in any browser.
+
+For further help, contact [Your Email Here].

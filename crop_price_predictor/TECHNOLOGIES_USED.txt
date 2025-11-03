@@ -1,0 +1,50 @@
+AgriSmart - Crop Price Predictor
+Technologies & Tools Used
+=========================
+
+1. Machine Learning
+-------------------
+- **Algorithm:** Random Forest Regressor
+  - Used for predicting future prices based on historical and weather (rainfall, temperature) data.
+  - Models are trained per crop type.
+- **Libraries:**
+  - scikit-learn: Main ML library for models and data processing
+  - joblib: Saving & loading trained models
+- **Custom Preprocessing:**
+  - Uses additional features: Month, Year, Average Rainfall (mm), Average Temperature (°C)
+  - Data from CSVs for each state/crop
+
+2. Backend (Python)
+-------------------
+- **Framework:** Flask 3.0
+  - Fast and lightweight web server for all web/API endpoints
+- **Session & Auth:**
+  - Flask sessions, Werkzeug security, custom decorators for role protection
+- **Database:**
+  - SQLite, managed using Python scripts and Flask routes
+  - User accounts (admin, farmer), prediction history, state crop info
+- **Data Visualization:**
+  - plotly, matplotlib, seaborn for generating charts and trend analysis
+
+3. Frontend
+-----------
+- HTML5, CSS3 (Bootstrap 5 for layout/responsiveness)
+- JavaScript (vanilla, for form checks & interactivity)
+- FontAwesome for icons
+
+4. Python Features
+------------------
+- Class-based config for states & crops
+- Decorators for login/admin-required logic
+- JSON API endpoint for live commodity lists
+- Error handlers (404, 500) for better UX
+- Scriptable database and retraining tools
+- Modular utility scripts for crop recommendation, state config, and weather auto-fill
+
+5. Project Structure Notes
+--------------------------
+- Separated folders for models, data, templates, static files
+- Ready for deployment (Procfile for cloud, requirements.txt, runtime.txt)
+
+---
+This summary can be used for technical presentation and college demonstration.

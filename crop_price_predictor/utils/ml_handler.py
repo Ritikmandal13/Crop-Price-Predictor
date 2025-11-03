@@ -1,6 +1,7 @@
 """
 Machine Learning Model Handler
 Loads pre-trained models and handles predictions
+Supports multi-state predictions for Indian agricultural states
 """
 import pickle
 import os
@@ -10,6 +11,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error, r2_score
+from utils.state_config import state_config
 
 class MLModelHandler:
     def __init__(self):
@@ -83,16 +85,17 @@ class MLModelHandler:
             self.models[commodity] = model
             print(f"✅ Created dummy model for {commodity}")
     
-    def predict(self, commodity, location, month, year, rainfall):
+    def predict(self, commodity, state, month, year, rainfall, temperature=25):
         """
         Make price prediction for given inputs
         
         Args:
             commodity: Crop name (e.g., 'Wheat')
-            location: District name
+            state: State name (e.g., 'Maharashtra', 'Punjab')
             month: Month (1-12)
             year: Year
             rainfall: Rainfall in mm
+            temperature: Temperature in Celsius (default: 25)
         
         Returns:
             Dictionary with prediction result
@@ -104,36 +107,38 @@ class MLModelHandler:
                     'error': f'Model not available for {commodity}'
                 }
             
-            # Prepare input features
-            features = np.array([[month, year, rainfall]], dtype=object)
+            # Validate if crop is suitable for the state
+            state_crops = state_config.get_crops_for_state(state)
+            if commodity not in state_crops:
+                return {
+                    'success': False,
+                    'error': f'{commodity} is not a major crop in {state}. Available crops: {", ".join(state_crops)}'
+                }
+            
+            # Prepare input features (Month, Year, Rainfall, Temperature)
+            features = np.array([[month, year, rainfall, temperature]], dtype=object)
             
             # Preprocess if preprocessor available
             if self.base_preprocessor:
                 try:
                     features = self.base_preprocessor.transform(features)
                 except:
-                    # If preprocessing fails, use raw features
-                    features = np.array([[month, year, rainfall]], dtype=float)
+                    # If preprocessing fails, use raw features (4 features)
+                    features = np.array([[month, year, rainfall, temperature]], dtype=float)
             else:
-                features = np.array([[month, year, rainfall]], dtype=float)
+                features = np.array([[month, year, rainfall, temperature]], dtype=float)
             
             # Make prediction
             model = self.models[commodity]
             prediction = model.predict(features)[0]
             
-            # Calculate price range based on commodity
-            # MSP (Minimum Support Price) multipliers from original project
-            multipliers = {
-                'Jowar': {'min': 1550, 'max': 2970},
-                'Wheat': {'min': 1350, 'max': 2125},
-                'Cotton': {'min': 3600, 'max': 6080},
-                'Sugarcane': {'min': 2250, 'max': 2775},
-                'Bajra': {'min': 1175, 'max': 2350}
-            }
+            # Calculate price range based on commodity and state
+            # MSP (Minimum Support Price) multipliers vary by region/state
+            multipliers = self._get_state_multipliers(commodity, state)
             
-            if commodity in multipliers:
-                min_price = (prediction * multipliers[commodity]['min']) / 100
-                max_price = (prediction * multipliers[commodity]['max']) / 100
+            if multipliers:
+                min_price = (prediction * multipliers['min']) / 100
+                max_price = (prediction * multipliers['max']) / 100
                 predicted_price = (min_price + max_price) / 2
             else:
                 # Default calculation if commodity not in list
@@ -147,10 +152,11 @@ class MLModelHandler:
                 'min_price': round(min_price, 2),
                 'max_price': round(max_price, 2),
                 'commodity': commodity,
-                'location': location,
+                'state': state,
                 'month': month,
                 'year': year,
-                'rainfall': rainfall
+                'rainfall': rainfall,
+                'temperature': temperature
             }
             
         except Exception as e:
@@ -158,6 +164,40 @@ class MLModelHandler:
                 'success': False,
                 'error': str(e)
             }
+    
+    def _get_state_multipliers(self, commodity, state):
+        """
+        Get state-specific MSP multipliers
+        Different states may have different price ranges
+        """
+        # Base multipliers (can be adjusted per state)
+        base_multipliers = {
+            'Jowar': {'min': 1550, 'max': 2970},
+            'Wheat': {'min': 1350, 'max': 2125},
+            'Cotton': {'min': 3600, 'max': 6080},
+            'Sugarcane': {'min': 2250, 'max': 2775},
+            'Bajra': {'min': 1175, 'max': 2350}
+        }
+        
+        # State-specific adjustments (can be enhanced with real data)
+        state_adjustments = {
+            'Punjab': {'Wheat': 1.05, 'Cotton': 1.02},  # Punjab typically has 5% higher wheat prices
+            'Maharashtra': {'Cotton': 1.03, 'Sugarcane': 1.02},
+            'Karnataka': {'Cotton': 0.98, 'Jowar': 0.97},
+            'Uttar Pradesh': {'Sugarcane': 1.04, 'Wheat': 1.01},
+            'Gujarat': {'Cotton': 1.02, 'Bajra': 0.99},
+            'Madhya Pradesh': {'Jowar': 0.96, 'Wheat': 0.98}
+        }
+        
+        multipliers = base_multipliers.get(commodity)
+        if multipliers and state in state_adjustments and commodity in state_adjustments[state]:
+            adjustment = state_adjustments[state][commodity]
+            multipliers = {
+                'min': multipliers['min'] * adjustment,
+                'max': multipliers['max'] * adjustment
+            }
+        
+        return multipliers
     
     def retrain_model(self, commodity, dataset_path):
         """

@@ -33,19 +33,33 @@ class PriceVisualization:
             return avg_price
         return wpi  # Fallback to WPI if commodity not found
     
-    def load_historical_data(self, commodity, csv_path=None):
+    def load_historical_data(self, commodity, state=None, csv_path=None):
         """
         Load historical price data from CSV
         
         Args:
             commodity: Crop name
+            state: State name (optional, for state-specific data)
             csv_path: Path to CSV file (optional)
         
         Returns:
             DataFrame with historical data
         """
         if csv_path is None:
-            csv_path = f"data/{commodity}.csv"
+            if state:
+                # Use state-specific data
+                state_folder_map = {
+                    'Maharashtra': 'Maharashtra',
+                    'Punjab': 'Punjab', 
+                    'Karnataka': 'Karnataka',
+                    'Uttar Pradesh': 'UttarPradesh',
+                    'Gujarat': 'Gujarat',
+                    'Madhya Pradesh': 'MadhyaPradesh'
+                }
+                state_folder = state_folder_map.get(state, 'Maharashtra')
+                csv_path = f"data/states/{state_folder}/{commodity}.csv"
+            else:
+                csv_path = f"data/{commodity}.csv"
         
         try:
             df = pd.read_csv(csv_path)
@@ -56,17 +70,18 @@ class PriceVisualization:
             print(f"Error loading data: {e}")
             return None
     
-    def create_historical_trend_chart(self, commodity):
+    def create_historical_trend_chart(self, commodity, state=None):
         """
         Create interactive line chart showing historical price trends
         
         Args:
             commodity: Crop name
+            state: State name (optional)
         
         Returns:
             Plotly figure as JSON
         """
-        df = self.load_historical_data(commodity)
+        df = self.load_historical_data(commodity, state)
         
         if df is None or df.empty:
             return None
@@ -136,7 +151,7 @@ class PriceVisualization:
         import plotly
         return plotly.io.to_json(fig, engine='json')
     
-    def create_seasonal_pattern_chart(self, commodity):
+    def create_seasonal_pattern_chart(self, commodity, state=None):
         """
         Create chart showing seasonal price patterns
         
@@ -146,7 +161,7 @@ class PriceVisualization:
         Returns:
             Plotly figure as JSON
         """
-        df = self.load_historical_data(commodity)
+        df = self.load_historical_data(commodity, state)
         
         if df is None or df.empty:
             return None
@@ -206,7 +221,7 @@ class PriceVisualization:
         import plotly
         return plotly.io.to_json(fig, engine='json')
     
-    def create_year_comparison_chart(self, commodity):
+    def create_year_comparison_chart(self, commodity, state=None):
         """
         Create chart comparing prices across different years
         
@@ -216,7 +231,7 @@ class PriceVisualization:
         Returns:
             Plotly figure as JSON
         """
-        df = self.load_historical_data(commodity)
+        df = self.load_historical_data(commodity, state)
         
         if df is None or df.empty:
             return None
@@ -291,7 +306,7 @@ class PriceVisualization:
         Returns:
             Dictionary with predictions
         """
-        df = self.load_historical_data(commodity)
+        df = self.load_historical_data(commodity, state)
         
         if df is None or df.empty:
             return None
@@ -331,7 +346,7 @@ class PriceVisualization:
         Returns:
             Plotly figure as JSON
         """
-        df = self.load_historical_data(commodity)
+        df = self.load_historical_data(commodity, state)
         
         if df is None or df.empty:
             return None

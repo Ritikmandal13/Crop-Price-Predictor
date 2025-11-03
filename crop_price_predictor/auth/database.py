@@ -40,8 +40,9 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
             commodity TEXT NOT NULL,
-            location TEXT NOT NULL,
+            state TEXT NOT NULL,
             rainfall REAL,
+            temperature REAL,
             month INTEGER,
             year INTEGER,
             predicted_price REAL NOT NULL,
@@ -49,6 +50,17 @@ def init_db():
             FOREIGN KEY (user_id) REFERENCES users (id)
         )
     ''')
+    
+    # Migrate old 'location' column to 'state' if it exists
+    try:
+        cursor.execute("PRAGMA table_info(predictions)")
+        columns = [column[1] for column in cursor.fetchall()]
+        if 'location' in columns and 'state' not in columns:
+            # Rename location to state
+            cursor.execute("ALTER TABLE predictions RENAME COLUMN location TO state")
+            print("✅ Migrated predictions table: location → state")
+    except Exception as e:
+        pass  # Table doesn't exist or already migrated
     
     # Create default admin if not exists
     cursor.execute('SELECT id FROM users WHERE username = ?', ('admin',))
